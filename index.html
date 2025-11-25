@@ -1,647 +1,100 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
-<head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
-    -->
-    <title>算姓氏</title>
-    <script src="./vue.js"></script>
-    
-
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous" />
-
-    <script src="https://cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>El Psy Congroo - 姓氏补完计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;900&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        [v-cloak] {
-            display: none;
-        }
-        
-        body {
-            background: url(http://imgs.aixifan.com/o_1c7il0iijlh912mq74g1evu1hl62r.jpg)no-repeat fixed top;
-            background-size: 100% 100%;
-            background-color: #1f2029;
-        }
-        
-        td {
-            background-color: aqua;
-            width: 50px;
-            height: 60px;
-        }
-        
-        p {
-            font-size: 14px;
-            text-align: center;
-        }
-        
-        span {
-            font-size: 18px;
-            display: block;
-            text-align: center;
-        }
-        
-        /* --- 核心修复区 Start --- */
-        
-        /* 1. 卡片主体 */
-        .card {
-            background-color: #2a2b38;
-            background-image: url("http://imgs.aixifan.com/o_1c7il0iij1vo15iriro7s51ttk2h.jpg");
-            background-size: cover;
-            background-repeat: no-repeat;
-            height: 80%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            
-            /* 关键点：开启3D空间，并设置更加平缓的透视距离 (2000px)，防止“醉酒”甩动 */
-            transform: perspective(2000px) rotateY(0deg);
-            transform-style: preserve-3d;
-            transform-origin: center center;
-            
-            /* 优化动画：使用贝塞尔曲线，让翻转有质感（先慢后快再慢） */
-            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            
-            /* 修复：确保相对定位，让内部绝对定位的back面位置准确 */
-            position: relative; 
-        }
-        
-        /* 2. 翻转后的状态 */
-        .card.active {
-            /* 保持统一的透视距离，只改变旋转角度 */
-            transform: perspective(2000px) rotateY(180deg);
-        }
+      body {
+        font-family: 'Noto Serif SC', serif;
+        background-color: #000000;
+        color: #ffffff;
+        overflow-x: hidden;
+      }
 
-        /* 3. 正面和背面通用的修复 */
-        .card .positive,
-        .card .back {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
-            
-            /* 绝对关键：隐藏背面！防止翻转时画面重叠闪烁 */
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-            
-            /* 开启硬件加速，防止卡顿 */
-            transform-style: preserve-3d;
-        }
+      /* Scanline Effect */
+      .scanlines {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(
+          to bottom,
+          rgba(255,255,255,0),
+          rgba(255,255,255,0) 50%,
+          rgba(0,0,0,0.2) 50%,
+          rgba(0,0,0,0.2)
+        );
+        background-size: 100% 4px;
+        pointer-events: none;
+        z-index: 50;
+      }
 
-        /* 4. 正面特有属性 */
-        .card .positive {
-            /* 正面默认朝向 0度 */
-            transform: rotateY(0deg);
-            z-index: 2;
-        }
-        
-        /* 5. 背面特有属性 */
-        .card .back {
-            position: absolute;
-            top: 0;
-            left: 0;
-            /* 背面预先旋转 180度 */
-            transform: rotateY(180deg);
-            z-index: 1;
-        }
-        
-        /* --- 核心修复区 End --- */
+      /* Steins;Gate Nixie Tube Glow */
+      .nixie-text {
+        color: #ff5f00;
+        text-shadow: 0 0 5px #ff5f00, 0 0 10px #ff3300;
+        font-family: 'Orbitron', sans-serif;
+      }
 
-        .switch {
-            width: 77px;
-            height: 20px;
-            background-color: white;
-            position: fixed;
-            z-index: 999;
-            top: 0;
-            left: 0px;
-            border-radius: 20px;
-        }
-        
-        .switch span {
-            width: 20px;
-            height: 20px;
-            background-color: orange;
-            border-radius: 50%;
-            display: block;
-            transition: all 1s;
-            position: absolute;
-        }
-        
-        .switch.active span {
-            transform: translateX(57px) rotateZ(360deg);
-        }
-        
-        input[type="radio"] {
-            margin-left: 130px;
-        }
-        
-        section>div>div {
-            width: 100%;
-        }
+      /* Bleach Style Sharp Text */
+      .bleach-title {
+        font-weight: 900;
+        letter-spacing: -0.05em;
+        text-transform: uppercase;
+      }
+
+      /* Custom Scrollbar for Terminal feel */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #111;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #333;
+        border: 1px solid #ff5f00;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #ff5f00;
+      }
+
+      /* Glitch Animation */
+      @keyframes glitch {
+        0% { transform: translate(0) }
+        20% { transform: translate(-2px, 2px) }
+        40% { transform: translate(-2px, -2px) }
+        60% { transform: translate(2px, 2px) }
+        80% { transform: translate(2px, -2px) }
+        100% { transform: translate(0) }
+      }
+      .glitch:hover {
+        animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+        color: #00ff00;
+      }
+      
+      .clip-path-slant {
+        clip-path: polygon(10% 0, 100% 0, 100% 100%, 0% 100%);
+      }
     </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
 </head>
-
-<body>
-    <div id="app">
-        <label>
-           <input  type="checkbox" id="toggle" style="display: none; "  @change="toggle"/>
-           <div class="switch" >
-             <span></span>
-           </div>
-         </label>
-        <div v-cloak class="row">
-
-            <div class="col-xs-4 col-xs-offset-4 card">
-                <section class="positive">
-                    <div class="one">
-                        <table border="1" v-for="(item,index) in card1">
-                            <tr>
-                                <td><p>{{item}}</p><span>{{surname[item]}}</span></td>
-                                <td><p>{{item+2}}</p><span>{{surname[item+2]}}</span></td>
-                                <td><p>{{item+4}}</p><span>{{surname[item+4]}}</span></td>
-                                <td><p>{{item+6}}</p><span>{{surname[item+6]}}</span></td>
-                                <td><p>{{item+8}}</p><span>{{surname[item+8]}}</span></td>
-                                <td><p>{{item+10}}</p><span>{{surname[item+10]}}</span></td>
-                                <td><p>{{item+12}}</p><span>{{surname[item+12]}}</span></td>
-                                <td><p>{{item+14}}</p><span>{{surname[item+14]}}</span></td>
-                                <td><p>{{item+16}}</p><span>{{surname[item+16]}}</span></td>
-                            </tr>
-                        </table>
-                        <div style="color: red;font-size: 24px;text-align: center; width: 100%;">(1/7)</div>
-                        <p style="color: seashell;font-size: 18px;width:100%;">这一张有你的姓氏吗?</p>
-
-                        <input @click="scrollWindow" type="radio" id="positive_one1" name="one" value="1">
-                        <label for="positive_one1"><span style="color: white; display: inline-block;">有</span></label>
-                        <input id="positive_one2" @click="scrollWindow" type="radio" name="one" value="0">
-                        <label for="positive_one2"><span style="color: white; display: inline-block;">无</span></label>
-                    </div>
-                </section>
-                <section class="back" v-if="seen">
-                    <div class="one">
-                        <table border="1" v-for="(item,index) in card1">
-                            <tr>
-                                <td><p>{{item}}</p><span>{{surname_back[item]}}</span></td>
-                                <td><p>{{item+2}}</p><span>{{surname_back[item+2]}}</span></td>
-                                <td><p>{{item+4}}</p><span>{{surname_back[item+4]}}</span></td>
-                                <td><p>{{item+6}}</p><span>{{surname_back[item+6]}}</span></td>
-                                <td><p>{{item+8}}</p><span>{{surname_back[item+8]}}</span></td>
-                                <td><p>{{item+10}}</p><span>{{surname_back[item+10]}}</span></td>
-                                <td><p>{{item+12}}</p><span>{{surname_back[item+12]}}</span></td>
-                                <td><p>{{item+14}}</p><span>{{surname_back[item+14]}}</span></td>
-                                <td><p>{{item+16}}</p><span>{{surname_back[item+16]}}</span></td>
-                            </tr>
-                        </table>
-                        <div style="color: red;font-size: 24px;text-align: center;">(1/7)</div>
-                        <p style="color: seashell;font-size: 20px;">这一张有你的姓氏吗?</p>
-                        <input type="radio" name="one_back" @click="scrollWindow" value="1"><span style="color: white; display: inline-block;">有</span>
-                        <input type="radio" name="one_back" @click="scrollWindow" value="0"><span style="color: white; display: inline-block;">无</span>
-                    </div>
-                </section>
-            </div>
-
-            <div class="col-xs-4 col-xs-offset-4 card">
-                <section class="positive">
-                    <div class="two">
-                         <table border="1">
-                            <tr><td v-for="index in card2_1"><p>{{index}}</p><span>{{surname[index]}}</span></td></tr>
-                            <tr><td v-for="index in card2_2"><p>{{index}}</p><span>{{surname[index]}}</span></td></tr>
-                            <tr><td v-for="index in card2_3"><p>{{index}}</p><span>{{surname[index]}}</span></td></tr>
-                            <tr><td v-for="index in card2_4"><p>{{index}}</p><span>{{surname[index]}}</span></td></tr>
-                            <tr><td v-for="index in card2_5"><p>{{index}}</p><span>{{surname[index]}}</span></td></tr>
-                            <tr><td v-for="index in card2_6"><p>{{index}}</p><span>{{surname[index]}}</span></td></tr>
-                            <tr><td v-for="index in card2_7"><p>{{index}}</p><span>{{surname[index]}}</span></td></tr>
-                        </table>
-                        <div style="color: red;font-size: 24px;text-align: center;">(2/7)</div>
-                        <p style="color: seashell;font-size: 20px;">这一张有你的姓氏吗?</p>
-                        <input id="positive_two1" @click="scrollWindow" type="radio" name="two" value="16">
-                        <label for="positive_two1"><span style="color: white; display: inline-block;">有</span></label>
-                        <input id="positive_two2" @click="scrollWindow" type="radio" name="two" value="0">
-                        <label for="positive_two2"><span style="color: white; display: inline-block;">无</span></label>
-                    </div>
-                </section>
-                <section class="back" v-if="seen">
-                    <div class="two">
-                        <table border="1">
-                            <tr><td v-for="index in card2_1"><p>{{index}}</p><span>{{surname_back[index]}}</span></td></tr>
-                            <tr><td v-for="index in card2_2"><p>{{index}}</p><span>{{surname_back[index]}}</span></td></tr>
-                            <tr><td v-for="index in card2_3"><p>{{index}}</p><span>{{surname_back[index]}}</span></td></tr>
-                            <tr><td v-for="index in card2_4"><p>{{index}}</p><span>{{surname_back[index]}}</span></td></tr>
-                            <tr><td v-for="index in card2_5"><p>{{index}}</p><span>{{surname_back[index]}}</span></td></tr>
-                            <tr><td v-for="index in card2_6"><p>{{index}}</p><span>{{surname_back[index]}}</span></td></tr>
-                            <tr><td v-for="index in card2_7"><p>{{index}}</p><span>{{surname_back[index]}}</span></td></tr>
-                        </table>
-                        <div style="color: red;font-size: 24px;text-align: center;">(2/7)</div>
-                        <p style="color: seashell;font-size: 20px;">这一张有你的姓氏吗?</p>
-                        <input type="radio" name="two_back" @click="scrollWindow" value="16"><span style="color: white; display: inline-block;">有</span>
-                        <input type="radio" name="two_back" @click="scrollWindow" value="0"><span style="color: white; display: inline-block;">无</span>
-                    </div>
-                </section>
-            </div>
-
-            <div class="col-xs-4 col-xs-offset-4 card">
-                <section class="positive">
-                    <div class="three">
-                        <table border="1" v-for=" (item,index) in card3">
-                            <tr>
-                                <td><p>{{item}}</p><span>{{surname[item]}}</span></td>
-                                <td><p>{{item+1}}</p><span>{{surname[item+1]}}</span></td>
-                                <td><p>{{item+2}}</p><span>{{surname[item+2]}}</span></td>
-                                <td><p>{{item+3}}</p><span>{{surname[item+3]}}</span></td>
-                                <td><p>{{item+4}}</p><span>{{surname[item+4]}}</span></td>
-                                <td><p>{{item+5}}</p><span>{{surname[item+5]}}</span></td>
-                                <td><p>{{item+6}}</p><span>{{surname[item+6]}}</span></td>
-                                <td><p>{{item+14}}</p><span>{{surname[item+7]}}</span></td>
-                                <td><p>{{item+8}}</p><span>{{surname[item+8]}}</span></td>
-                            </tr>
-                        </table>
-                        <div style="color: red;font-size: 24px;text-align: center;">(3/7)</div>
-                        <p style="color: seashell;font-size: 20px;">这一张有你的姓氏吗?</p>
-                        <input id="positive_three1" @click="scrollWindow" type="radio" name="three" value="64">
-                        <label for="positive_three1"><span style="color: white; display: inline-block;">有</span></label>
-                        <input id="positive_three2" @click="scrollWindow" type="radio" name="three" value="0">
-                        <label for="positive_three2"><span style="color: white; display: inline-block;">无</span></label>
-                    </div>
-                </section>
-                <section class="back" v-if="seen">
-                    <div class="three">
-                        <table border="1" v-for=" (item,index) in card3">
-                            <tr>
-                                <td><p>{{item}}</p><span>{{surname_back[item]}}</span></td>
-                                <td><p>{{item+1}}</p><span>{{surname_back[item+1]}}</span></td>
-                                <td><p>{{item+2}}</p><span>{{surname_back[item+2]}}</span></td>
-                                <td><p>{{item+3}}</p><span>{{surname_back[item+3]}}</span></td>
-                                <td><p>{{item+4}}</p><span>{{surname_back[item+4]}}</span></td>
-                                <td><p>{{item+5}}</p><span>{{surname_back[item+5]}}</span></td>
-                                <td><p>{{item+6}}</p><span>{{surname_back[item+6]}}</span></td>
-                                <td><p>{{item+14}}</p><span>{{surname_back[item+7]}}</span></td>
-                                <td><p>{{item+8}}</p><span>{{surname_back[item+8]}}</span></td>
-                            </tr>
-                        </table>
-                        <div style="color: red;font-size: 24px;text-align: center;">(3/7)</div>
-                        <p style="color: seashell;font-size: 20px;">这一张有你的姓氏吗?</p>
-                        <input type="radio" name="three_back" @click="scrollWindow" value="64"><span style="color: white; display: inline-block;">有</span>
-                        <input type="radio" name="three_back" @click="scrollWindow" value="0"><span style="color: white; display: inline-block;">无</span>
-                    </div>
-                </section>
-            </div>
-
-            <div class="col-xs-4 col-xs-offset-4 card">
-                <section class="positive">
-                    <div class="four">
-                        <table border="1">
-                            <tr v-for="index in card4">
-                                <td><p>{{index[0]}}</p><span>{{surname[index[0]]}}</span></td>
-                                <td><p>{{index[1]}}</p><span>{{surname[index[1]]}}</span></td>
-                                <td><p>{{index[2]}}</p><span>{{surname[index[2]]}}</span></td>
-                                <td><p>{{index[3]}}</p><span>{{surname[index[3]]}}</span></td>
-                                <td><p>{{index[4]}}</p><span>{{surname[index[4]]}}</span></td>
-                                <td><p>{{index[5]}}</p><span>{{surname[index[5]]}}</span></td>
-                                <td><p>{{index[6]}}</p><span>{{surname[index[6]]}}</span></td>
-                                <td><p>{{index[7]}}</p><span>{{surname[index[7]]}}</span></td>
-                                <td><p>{{index[8]}}</p><span>{{surname[index[8]]}}</span></td>
-                            </tr>
-                        </table>
-                        <div style="color: red;font-size: 24px;text-align: center;">(4/7)</div>
-                        <p style="color: seashell;font-size: 20px;">这一张有你的姓氏吗?</p>
-                        <input id="positive_four1" @click="scrollWindow" type="radio" name="four" value="2">
-                        <label for="positive_four1"><span style="color: white; display: inline-block;">有</span></label>
-                        <input id="positive_four2" @click="scrollWindow" type="radio" name="four" value="0">
-                        <label for="positive_four2"><span style="color: white; display: inline-block;">无</span></label>
-                    </div>
-                </section>
-                <section class="back" v-if="seen">
-                    <div class="four">
-                        <table border="1">
-                            <tr v-for="index in card4">
-                                <td><p>{{index[0]}}</p><span>{{surname_back[index[0]]}}</span></td>
-                                <td><p>{{index[1]}}</p><span>{{surname_back[index[1]]}}</span></td>
-                                <td><p>{{index[2]}}</p><span>{{surname_back[index[2]]}}</span></td>
-                                <td><p>{{index[3]}}</p><span>{{surname_back[index[3]]}}</span></td>
-                                <td><p>{{index[4]}}</p><span>{{surname_back[index[4]]}}</span></td>
-                                <td><p>{{index[5]}}</p><span>{{surname_back[index[5]]}}</span></td>
-                                <td><p>{{index[6]}}</p><span>{{surname_back[index[6]]}}</span></td>
-                                <td><p>{{index[7]}}</p><span>{{surname_back[index[7]]}}</span></td>
-                                <td><p>{{index[8]}}</p><span>{{surname_back[index[8]]}}</span></td>
-                            </tr>
-                        </table>
-                        <div style="color: red;font-size: 24px;text-align: center;">(4/7)</div>
-                        <p style="color: seashell;font-size: 20px;">这一张有你的姓氏吗?</p>
-                        <input type="radio" name="four_back" @click="scrollWindow" value="2"><span style="color: white; display: inline-block;">有</span>
-                        <input type="radio" name="four_back" @click="scrollWindow" value="0"><span style="color: white; display: inline-block;">无</span>
-                    </div>
-                </section>
-            </div>
-
-            <div class="col-xs-4 col-xs-offset-4 card">
-                <section class="positive">
-                    <div class="five">
-                         <table border="1">
-                            <tr v-for="index in card5">
-                                <td><p>{{index[0]}}</p><span>{{surname[index[0]]}}</span></td>
-                                <td><p>{{index[1]}}</p><span>{{surname[index[1]]}}</span></td>
-                                <td><p>{{index[2]}}</p><span>{{surname[index[2]]}}</span></td>
-                                <td><p>{{index[3]}}</p><span>{{surname[index[3]]}}</span></td>
-                                <td><p>{{index[4]}}</p><span>{{surname[index[4]]}}</span></td>
-                                <td><p>{{index[5]}}</p><span>{{surname[index[5]]}}</span></td>
-                                <td><p>{{index[6]}}</p><span>{{surname[index[6]]}}</span></td>
-                                <td><p>{{index[7]}}</p><span>{{surname[index[7]]}}</span></td>
-                                <td><p>{{index[8]}}</p><span>{{surname[index[8]]}}</span></td>
-                            </tr>
-                        </table>
-                        <div style="color: red;font-size: 24px;text-align: center;">(5/7)</div>
-                        <p style="color: seashell;font-size: 20px;">这一张有你的姓氏吗?</p>
-                        <input id="positive_five1" @click="scrollWindow" type="radio" name="five" value="32">
-                        <label for="positive_five1"> <span style="color: white; display: inline-block;">有</span></label>
-                        <input id="positive_five2" @click="scrollWindow" type="radio" name="five" value="0">
-                        <label for="positive_five2"> <span style="color: white; display: inline-block;">无</span></label>
-                    </div>
-                </section>
-                <section class="back" v-if="seen">
-                    <div class="five">
-                        <table border="1">
-                            <tr v-for="index in card5">
-                                <td><p>{{index[0]}}</p><span>{{surname_back[index[0]]}}</span></td>
-                                <td><p>{{index[1]}}</p><span>{{surname_back[index[1]]}}</span></td>
-                                <td><p>{{index[2]}}</p><span>{{surname_back[index[2]]}}</span></td>
-                                <td><p>{{index[3]}}</p><span>{{surname_back[index[3]]}}</span></td>
-                                <td><p>{{index[4]}}</p><span>{{surname_back[index[4]]}}</span></td>
-                                <td><p>{{index[5]}}</p><span>{{surname_back[index[5]]}}</span></td>
-                                <td><p>{{index[6]}}</p><span>{{surname_back[index[6]]}}</span></td>
-                                <td><p>{{index[7]}}</p><span>{{surname_back[index[7]]}}</span></td>
-                                <td><p>{{index[8]}}</p><span>{{surname_back[index[8]]}}</span></td>
-                            </tr>
-                        </table>
-                        <div style="color: red;font-size: 24px;text-align: center;">(5/7)</div>
-                        <p style="color: seashell;font-size: 20px;">这一张有你的姓氏吗?</p>
-                        <input type="radio" name="five_back" @click="scrollWindow" value="32"><span style="color: white; display: inline-block;">有</span>
-                        <input type="radio" name="five_back" @click="scrollWindow" value="0"><span style="color: white; display: inline-block;">无</span>
-                    </div>
-                </section>
-            </div>
-
-            <div class="col-xs-4 col-xs-offset-4 card">
-                <section class="positive">
-                    <div class="six">
-                        <table border="1">
-                            <tr v-for="index in card6">
-                                <td><p>{{index[0]}}</p><span>{{surname[index[0]]}}</span></td>
-                                <td><p>{{index[1]}}</p><span>{{surname[index[1]]}}</span></td>
-                                <td><p>{{index[2]}}</p><span>{{surname[index[2]]}}</span></td>
-                                <td><p>{{index[3]}}</p><span>{{surname[index[3]]}}</span></td>
-                                <td><p>{{index[4]}}</p><span>{{surname[index[4]]}}</span></td>
-                                <td><p>{{index[5]}}</p><span>{{surname[index[5]]}}</span></td>
-                                <td><p>{{index[6]}}</p><span>{{surname[index[6]]}}</span></td>
-                                <td><p>{{index[7]}}</p><span>{{surname[index[7]]}}</span></td>
-                                <td><p>{{index[8]}}</p><span>{{surname[index[8]]}}</span></td>
-                            </tr>
-                        </table>
-                        <div style="color: red;font-size: 24px;text-align: center;">(6/7)</div>
-                        <p style="color: seashell;font-size: 20px;">这一张有你的姓氏吗?</p>
-                        <input id="positive_six1" @click="scrollWindow" type="radio" name="six" value="8">
-                        <label for="positive_six1"> <span style="color: white; display: inline-block;">有</span></label>
-                        <input id="positive_six2" @click="scrollWindow" type="radio" name="six" value="0">
-                        <label for="positive_six2"> <span style="color: white; display: inline-block;">无</span></label>
-                    </div>
-                </section>
-                <section class="back" v-if="seen">
-                    <div class="six">
-                        <table border="1">
-                            <tr v-for="index in card6">
-                                <td><p>{{index[0]}}</p><span>{{surname_back[index[0]]}}</span></td>
-                                <td><p>{{index[1]}}</p><span>{{surname_back[index[1]]}}</span></td>
-                                <td><p>{{index[2]}}</p><span>{{surname_back[index[2]]}}</span></td>
-                                <td><p>{{index[3]}}</p><span>{{surname_back[index[3]]}}</span></td>
-                                <td><p>{{index[4]}}</p><span>{{surname_back[index[4]]}}</span></td>
-                                <td><p>{{index[5]}}</p><span>{{surname_back[index[5]]}}</span></td>
-                                <td><p>{{index[6]}}</p><span>{{surname_back[index[6]]}}</span></td>
-                                <td><p>{{index[7]}}</p><span>{{surname_back[index[7]]}}</span></td>
-                                <td><p>{{index[8]}}</p><span>{{surname_back[index[8]]}}</span></td>
-                            </tr>
-                        </table>
-                        <div style="color: red;font-size: 24px;text-align: center;">(6/7)</div>
-                        <p style="color: seashell;font-size: 20px;">这一张有你的姓氏吗?</p>
-                        <input type="radio" name="six_back" @click="scrollWindow" value="8"><span style="color: white; display: inline-block;">有</span>
-                        <input type="radio" name="six_back" @click="scrollWindow" value="0"><span style="color: white; display: inline-block;">无</span>
-                    </div>
-                </section>
-            </div>
-
-            <div class="col-xs-4 col-xs-offset-4 card">
-                <section class="positive">
-                    <div class="seven">
-                         <table border="1">
-                            <tr v-for="index in card7">
-                                <td><p>{{index[0]}}</p><span>{{surname[index[0]]}}</span></td>
-                                <td><p>{{index[1]}}</p><span>{{surname[index[1]]}}</span></td>
-                                <td><p>{{index[2]}}</p><span>{{surname[index[2]]}}</span></td>
-                                <td><p>{{index[3]}}</p><span>{{surname[index[3]]}}</span></td>
-                                <td><p>{{index[4]}}</p><span>{{surname[index[4]]}}</span></td>
-                                <td><p>{{index[5]}}</p><span>{{surname[index[5]]}}</span></td>
-                                <td><p>{{index[6]}}</p><span>{{surname[index[6]]}}</span></td>
-                                <td><p>{{index[7]}}</p><span>{{surname[index[7]]}}</span></td>
-                                <td><p>{{index[8]}}</p><span>{{surname[index[8]]}}</span></td>
-                            </tr>
-                        </table>
-                        <div style="color: red;font-size: 24px;text-align: center;">(7/7)</div>
-                        <p style="color: seashell;font-size: 20px;">这一张有你的姓氏吗?</p>
-                        <input id="positive_seven1" @click="scrollWindow" type="radio" name="seven" value="4">
-                        <label for="positive_seven1"> <span style="color: white; display: inline-block;">有</span></label>
-                        <input id="positive_seven2" @click="scrollWindow" type="radio" name="seven" value="0">
-                        <label for="positive_seven2"> <span style="color: white; display: inline-block;">无</span></label>
-                        <br>
-                        <button style="margin-left:35%;margin-top: 40px;" @click="caculate">点击得出你的姓氏</button>
-                    </div>
-                </section>
-                <section class="back" v-if="seen">
-                    <div class="seven">
-                        <table border="1">
-                            <tr v-for="index in card7">
-                                <td><p>{{index[0]}}</p><span>{{surname_back[index[0]]}}</span></td>
-                                <td><p>{{index[1]}}</p><span>{{surname_back[index[1]]}}</span></td>
-                                <td><p>{{index[2]}}</p><span>{{surname_back[index[2]]}}</span></td>
-                                <td><p>{{index[3]}}</p><span>{{surname_back[index[3]]}}</span></td>
-                                <td><p>{{index[4]}}</p><span>{{surname_back[index[4]]}}</span></td>
-                                <td><p>{{index[5]}}</p><span>{{surname_back[index[5]]}}</span></td>
-                                <td><p>{{index[6]}}</p><span>{{surname_back[index[6]]}}</span></td>
-                                <td><p>{{index[7]}}</p><span>{{surname_back[index[7]]}}</span></td>
-                                <td><p>{{index[8]}}</p><span>{{surname_back[index[8]]}}</span></td>
-                            </tr>
-                        </table>
-                        <div style="color: red;font-size: 24px;text-align: center;">(7/7)</div>
-                        <p style="color: seashell;font-size: 20px;">这一张有你的姓氏吗?</p>
-                        <input type="radio" name="seven_back" @click="scrollWindow" value="4"><span style="color: white; display: inline-block;">有</span>
-                        <input type="radio" name="seven_back" @click="scrollWindow" value="0"><span style="color: white; display: inline-block;">无</span>
-                        <br>
-                        <button style="margin-left:35%;margin-top: 40px;" @click="caculate_back">点击得出你的稀有姓氏</button>
-                    </div>
-                </section>
-            </div>
-
-        </div>
-    </div>
-
-    <script>
-        var app = new Vue({
-            el: "#app",
-            data: {
-                card1: [1, 19, 37, 55, 73, 91, 109],
-                card2_1: [16, 17, 18, 19, 20, 21, 22, 23, 24],
-                card2_2: [25, 26, 27, 28, 29, 30, 31, 48, 49],
-                card2_3: [50, 51, 52, 53, 54, 55, 56, 57, 58],
-                card2_4: [59, 60, 61, 62, 63, 80, 81, 82, 83],
-                card2_5: [84, 85, 86, 87, 88, 89, 90, 91, 92],
-                card2_6: [93, 94, 95, 112, 113, 114, 115, 116, 117],
-                card2_7: [118, 119, 120, 121, 122, 123, 124, 125, 126],
-                card3: [64, 73, 82, 91, 100, 109, 118],
-                card4: [
-                    [2, 3, 6, 7, 10, 11, 14, 15, 18],
-                    [19, 22, 23, 26, 27, 39, 31, 34, 35],
-                    [38, 39, 42, 43, 46, 47, 50, 51, 54],
-                    [55, 58, 59, 62, 63, 66, 67, 70, 71],
-                    [74, 75, 78, 79, 82, 83, 86, 87, 90],
-                    [91, 94, 95, 98, 99, 102, 103, 106, 107],
-                    [110, 111, 114, 115, 118, 119, 122, 123, 126]
-                ],
-                card5: [
-                    [32, 33, 34, 35, 36, 37, 38, 39, 40],
-                    [41, 42, 43, 44, 45, 46, 47, 48, 49],
-                    [50, 51, 52, 53, 54, 55, 56, 57, 58],
-                    [59, 60, 61, 62, 63, 96, 97, 98, 99],
-                    [100, 101, 102, 103, 104, 105, 106, 107, 108],
-                    [109, 110, 111, 112, 113, 114, 115, 116, 117],
-                    [118, 119, 120, 121, 122, 123, 124, 125, 126]
-                ],
-                card6: [
-                    [8, 9, 10, 11, 12, 13, 14, 15, 24],
-                    [25, 26, 27, 28, 29, 30, 31, 40, 41],
-                    [42, 43, 44, 45, 46, 47, 56, 57, 58],
-                    [59, 60, 61, 62, 63, 72, 73, 74, 75],
-                    [76, 77, 78, 79, 88, 89, 90, 91, 92],
-                    [93, 94, 95, 104, 105, 106, 107, 108, 109],
-                    [110, 111, 120, 121, 122, 123, 124, 125, 126]
-                ],
-                card7: [
-                    [4, 5, 6, 7, 12, 13, 14, 15, 20],
-                    [21, 22, 23, 28, 29, 30, 31, 36, 37],
-                    [38, 39, 44, 45, 46, 47, 52, 53, 54],
-                    [55, 60, 61, 62, 63, 68, 69, 70, 71],
-                    [76, 77, 78, 79, 84, 85, 86, 87, 92],
-                    [93, 94, 95, 100, 101, 102, 103, 108, 109, ],
-                    [110, 111, 116, 117, 118, 119, 124, 125, 126]
-                ],
-                surname: ["占位", "赵", "司马", "钱", "孔", "孙", "罗", "李", "上官", "周",
-                    "卢", "吴", "高", "郑", "顾", "王", "丁", "潘", "鲁",
-                    "余", "雷", "刘", "董", "徐", "梁", "朱", "叶", "金",
-                    "任", "彭", "唐", "魏", "欧阳", "马", "胡", "林", "孟",
-                    "袁", "钟", "戴", "龚", "肖", "黄", "夏", "苏", "许",
-                    "方", "何", "苗", "张", "万", "曹", "毛", "严", "付",
-                    "范", "田", "向", "杜", "汤", "段", "姚", "宋", "蔡",
-                    "涂", "阮", "伍", "代", "覃", "成", "邹", "邓", "吕",
-                    "程", "汪", "柳", "石", "卜", "郝", "易", "陶", "童",
-                    "曾", "欧", "喻", "郭", "施", "史", "贾", "关", "候",
-                    "薛", "熊", "江", "盛", "白", "赖", "贺", "舒", "谢",
-                    "姜", "申", "华", "尹", "邱", "殷", "常", "柯", "牛",
-                    "莫", "祁", "聂", "康", "倪", "梅", "水", "艾", "岳",
-                    "廖", "翟", "邬", "季", "花", "左", "桂", "龙", "陆"
-                ],
-                surname_back: ["占位", "冯", "陈", "褚", "卫", "蒋", "沈", "韩", "杨", "秦",
-                    "尤", "戚", "柏", "窦", "章", "云", "葛", "奚", "郎",
-                    "韦", "昌", "凤", "俞", "酆", "鲍", "费", "廉", "岑",
-                    "滕", "毕", "安", "乐", "于", "时", "傅", "皮", "卞",
-                    "齐", "元", "平", "和", "穆", "萧", "邵", "湛", "禹",
-                    "狄", "米", "贝", "明", "臧", "计", "伏", "谈", "茅",
-                    "庞", "纪", "屈", "项", "祝", "蓝", "闵", "席", "麻",
-                    "强", "路", "娄", "危", "颜", "刁", "骆", "樊", "凌",
-                    "霍", "虞", "支", "昝", "管", "经", "房", "裘", "缪",
-                    "干", "解", "应", "宗", "宣", "贲", "郁", "单", "杭",
-                    "洪", "包", "诸", "崔", "吉", "钮", "嵇", "邢", "滑",
-                    "裴", "荣", "翁", "荀", "羊", "於", "惠", "甄", "麴",
-                    "家", "封", "芮", "羿", "储", "靳", "汲", "邴", "糜",
-                    "松", "井", "富", "巫", "乌", "焦", "巴", "弓", "第五"
-                ],
-                seen: false,
-                view: true,
-            },
-            methods: {
-                caculate: function() {
-                    var nodes = document.getElementsByTagName('input');
-                    var one = 0, two = 0, three = 0, four = 0, five = 0, six = 0, seven = 0;
-                    for (var i = 0; i < nodes.length; i++) {
-                        if (nodes[i].type == 'radio' && nodes[i].checked) {
-                            if (nodes[i].name == 'one') one = nodes[i].value;
-                            if (nodes[i].name == 'two') two = nodes[i].value;
-                            if (nodes[i].name == 'three') three = nodes[i].value;
-                            if (nodes[i].name == 'four') four = nodes[i].value;
-                            if (nodes[i].name == 'five') five = nodes[i].value;
-                            if (nodes[i].name == 'six') six = nodes[i].value;
-                            if (nodes[i].name == 'seven') seven = nodes[i].value;
-                        }
-                    }
-                    var sum = parseInt(one) + parseInt(two) + parseInt(three) + parseInt(four) + parseInt(five) + parseInt(six) + parseInt(seven);
-                    var result = this.surname[sum];
-                    if (sum <= 126 && sum > 0 && result != undefined) {
-                        alert("唔哈哈哈,这一切都是命运石之门的选择!" + "\n" + "看来你的姓氏是:" + "\n" + result);
-                    } else if (sum > 126 && result == undefined) {
-                        alert("请认真查看,不要全部选有")
-                    } else if (result == undefined) {
-                        alert("请检查是否有未选择的地方");
-                    } else if (sum == 0) {
-                        alert("难道是机关的阴谋吗?竟然没有你的姓氏,那请点击左上角按钮!")
-                    }
-                },
-                caculate_back: function() {
-                    var nodes_back = document.getElementsByTagName('input');
-                    var one_back=0, two_back=0, three_back=0, four_back=0, five_back=0, six_back=0, seven_back=0;
-                    for (var i = 0; i < nodes_back.length; i++) {
-                        if (nodes_back[i].type == 'radio' && nodes_back[i].checked) {
-                            if (nodes_back[i].name == 'one_back') one_back = nodes_back[i].value;
-                            if (nodes_back[i].name == 'two_back') two_back = nodes_back[i].value;
-                            if (nodes_back[i].name == 'three_back') three_back = nodes_back[i].value;
-                            if (nodes_back[i].name == 'four_back') four_back = nodes_back[i].value;
-                            if (nodes_back[i].name == 'five_back') five_back = nodes_back[i].value;
-                            if (nodes_back[i].name == 'six_back') six_back = nodes_back[i].value;
-                            if (nodes_back[i].name == 'seven_back') seven_back = nodes_back[i].value;
-                        }
-                    }
-                    var sum_back = parseInt(one_back) + parseInt(two_back) + parseInt(three_back) + parseInt(four_back) + parseInt(five_back) + parseInt(six_back) + parseInt(seven_back);
-                    var result_back = this.surname_back[sum_back];
-                    if (sum_back < 127 && sum_back > 0 && result_back != undefined) {
-                        alert("唔哈哈哈,这一切都是命运石之门的选择!" + "\n" + "看来你的姓氏是:" + "\n" + result_back);
-                    } else if (sum_back == 127 && result_back == undefined) {
-                        alert("请认真查看,不要全部选有")
-                    } else if (result_back == undefined) {
-                        alert("请检查是否有未选择的地方");
-                    } else if (sum_back == 0) {
-                        alert("看来您的姓氏真的很罕见哦!嘛,毕辣石,很正常的")
-                    }
-                },
-                toggle: function() {
-                    if ($("#toggle").prop("checked")) {
-                        $(".card").addClass("active");
-                        $(".switch").addClass("active");
-                        this.seen = !this.seen;
-                    } else {
-                        $(".card").removeClass("active");
-                        $(".switch").removeClass("active");
-                        this.seen = !this.seen;
-                    }
-                },
-                scrollWindow: function(e) {
-                    var $currentCard = $(e.target).closest('.card');
-                    var $nextCard = $currentCard.next('.card');
-                    if ($nextCard.length > 0) {
-                        $nextCard[0].scrollIntoView({ behavior: "smooth", block: "center" });
-                    }
-                }
-            }
-        })
-    </script>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
 </body>
 </html>
-
