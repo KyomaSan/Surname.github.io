@@ -690,7 +690,7 @@ const SURNAME_DB = {
 
                 let detailsHtml = '';
                 if (!isUnknown && aiInsight) {
-                    const poemLines = aiInsight.poem.split('\\n').map(line => `<p class="mb-2 last:mb-0">${line}</p>`).join('');
+                    const poemLines = aiInsight.poem.split('\n').map(line => `<p class="mb-2 last:mb-0">${line}</p>`).join('');
                     detailsHtml = `
                         <div class="border-l-2 border-[#00ff00] pl-4 md:pl-6 space-y-8 bg-black/50 p-4">
                             <div>
@@ -699,7 +699,7 @@ const SURNAME_DB = {
                             </div>
                             <div>
                                 <h3 class="text-[#ff5f00] font-bold mb-3 flex items-center gap-2 text-base">${icons.Radio} 诗意序列 (POEM)</h3>
-                                <div class="text-white text-xl not-italic border border-stone-600 p-6 bg-[#0a0a0a]/80 tracking-wide shadow-lg">${poemLines}</div>
+                                <div class="text-white text-xl not-italic border border-stone-600 p-6 bg-[#0a0a0a]/80 tracking-wide shadow-lg text-center">${poemLines}</div>
                             </div>
                         </div>
                     `;
